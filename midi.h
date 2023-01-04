@@ -2,7 +2,6 @@
 #define _MIDI_H_
 
 #include <cstdint>
-#include "synth_config.h"
 
 namespace su_midi{
     const std::uint8_t MSG_STATUS_MASK = 0x80;
