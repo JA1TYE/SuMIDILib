@@ -1,5 +1,4 @@
 #include <cstdint>
-#include "synth_config.h"
 #include "midi.h"
 
 namespace su_midi{
