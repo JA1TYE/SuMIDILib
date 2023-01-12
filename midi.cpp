@@ -2,10 +2,14 @@
 #include "midi.h"
 
 namespace su_midi{
-    midi_receiver_base::midi_receiver_base(){
+    midi_receiver_base::midi_receiver_base():midi_receiver_base(ALL_CHANNEL_MASK){
+   
+    }
+    midi_receiver_base::midi_receiver_base(std::uint16_t mask){
         state = INIT_STATE;
         status_byte = 0x00;
-        first_arg = 0x00;        
+        first_arg = 0x00;
+        channel_mask = mask;             
     }
     void midi_receiver_base::parse_byte(std::uint8_t dat){
         if(state == INIT_STATE){
@@ -54,10 +58,14 @@ namespace su_midi{
             else{//Then it is 1st arg. of msg.
                 first_arg = dat;
                 if(status_byte == MSG_PC){
-                    pc_handler(first_arg,recieve_ch);
+                    if((channel_mask & (1 << recieve_ch)) != 0){
+                        pc_handler(first_arg,recieve_ch);
+                    }
                 }
                 else if(status_byte == MSG_CH_PRESSURE){
-                    ch_pressure_handler(first_arg,recieve_ch);
+                    if((channel_mask & (1 << recieve_ch)) != 0){
+                        ch_pressure_handler(first_arg,recieve_ch);
+                    }
                 }
                 else if(status_byte == MSG_QUARTER_FRAME){
                     quarter_frame_handler(first_arg);
@@ -76,21 +84,31 @@ namespace su_midi{
         }
         else if(state == WAIT_2ND_ARG){
             if(status_byte == MSG_NOTE_OFF){
-                note_off_handler(first_arg,dat,recieve_ch);
+                if((channel_mask & (1 << recieve_ch)) != 0){
+                    note_off_handler(first_arg,dat,recieve_ch);
+                }
             }
             else if(status_byte == MSG_NOTE_ON){
-                note_on_handler(first_arg,dat,recieve_ch);
+                if((channel_mask & (1 << recieve_ch)) != 0){
+                    note_on_handler(first_arg,dat,recieve_ch);
+                }
             }
             else if(status_byte == MSG_POLY_PRESSURE){
-                poly_pressure_handler(first_arg,dat,recieve_ch);
+                if((channel_mask & (1 << recieve_ch)) != 0){
+                    poly_pressure_handler(first_arg,dat,recieve_ch);
+                }
             }
             else if(status_byte == MSG_CC){
-                cc_handler(first_arg,dat,recieve_ch);
+                if((channel_mask & (1 << recieve_ch)) != 0){
+                    cc_handler(first_arg,dat,recieve_ch);
+                }
             }
             else if(status_byte == MSG_PITCH_BEND){
                 std::uint16_t tmp;
                 tmp = first_arg | (dat << 7);
-                pitchbend_handler(tmp - 8192,recieve_ch);
+                if((channel_mask & (1 << recieve_ch)) != 0){
+                    pitchbend_handler(tmp - 8192,recieve_ch);
+                }
             }
             else if(status_byte == MSG_SONG_PTR){
                 std::uint16_t tmp;
@@ -99,5 +117,8 @@ namespace su_midi{
             }
             state = INIT_STATE;
         }
+    }
+    void midi_receiver_base::set_channel_mask(std::uint16_t mask){
+        channel_mask = mask;
     }
 }

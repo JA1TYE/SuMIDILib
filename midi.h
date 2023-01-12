@@ -125,6 +125,9 @@ namespace su_midi{
     const std::uint8_t CC_MONO_MODE = 126;
     const std::uint8_t CC_POLY_MODE = 127;
 
+    //Channel mask definition
+    const std::uint16_t ALL_CHANNEL_MASK = 0xffff;
+
     class midi_receiver_base{
         private:
             typedef enum{
@@ -135,6 +138,7 @@ namespace su_midi{
             std::uint8_t status_byte;
             std::uint8_t first_arg;
             std::uint8_t recieve_ch;
+            std::uint16_t channel_mask;
         protected:
             //Handler for Channel Message
             virtual void note_on_handler(std::uint8_t note_num,std::uint8_t velocity,std::uint8_t ch){
@@ -201,7 +205,9 @@ namespace su_midi{
             }
         public:
             midi_receiver_base();
+            midi_receiver_base(std::uint16_t mask);
             void parse_byte(std::uint8_t dat);
+            void set_channel_mask(std::uint16_t mask);
     };
 }
 #endif
