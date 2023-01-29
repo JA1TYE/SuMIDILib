@@ -13,6 +13,10 @@ namespace su_midi{
         channel_mask = mask;             
     }
     void midi_receiver_base::parse_byte(std::uint8_t dat){
+        //This IF statement is intended to improve robustness against invalid input
+        if((dat & MSG_STATUS_MASK) == MSG_STATUS_MASK){
+            state = INIT_STATE;
+        }
         if(state == INIT_STATE){
             if((dat & MSG_STATUS_MASK) == MSG_STATUS_MASK){//If it is a status byte
                 if((dat & MSG_SYSTEM_REALTIME_MASK) == MSG_SYSTEM_REALTIME_MASK){//And if it's a realtime msg
